@@ -4,14 +4,14 @@ const userModel = require('../models/userModel');
 require('dotenv').config();
 
 const login = async (req, res) => {
-  const { userId, password } = req.body;
+  const { phoneNumber, password } = req.body;
 
-  if (!userId || !password) {
-    return res.status(400).json({ message: 'User ID and password are required' });
+  if (!phoneNumber || !password) {
+    return res.status(400).json({ message: 'Phone number and password are required' });
   }
 
   try {
-    const user = await userModel.getUserById(userId);
+    const user = await userModel.getUserByPhone(phoneNumber);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
