@@ -1,22 +1,55 @@
 const db = require('../config/db');
 
-// Submit a new report
-const createReport = async (userId, waterSourceId, description) => {
+// ✅ Submit a new report (with name, phone, image, etc.)
+const createReport = async ({
+  userId,
+  name,
+  phone_number,
+  location,
+  water_source_type,
+  description,
+  status,
+  date_created,
+  imagePath
+}) => {
   const result = await db.query(
-    `INSERT INTO reports (user_id, water_source_id, description)
-     VALUES ($1, $2, $3) RETURNING *`,
-    [userId, waterSourceId, description]
+    `INSERT INTO reports (
+      user_id,
+      name,
+      phone_number,
+      location,
+      water_source_type,
+      description,
+      status,
+      date_created,
+      image_path
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+     RETURNING *`,
+    [
+      userId,
+      name,
+      phone_number,
+      location,
+      water_source_type,
+      description,
+      status,
+      date_created,
+      imagePath
+    ]
   );
+
   return result.rows[0];
 };
 
-// Get all reports
+// ✅ Get all reports (admin)
 const getAllReports = async () => {
-  const result = await db.query('SELECT * FROM reports ORDER BY date_created DESC');
+  const result = await db.query(
+    'SELECT * FROM reports ORDER BY date_created DESC'
+  );
   return result.rows;
 };
 
-// Get reports by user
+// ✅ Get all reports by a specific user
 const getReportsByUser = async (userId) => {
   const result = await db.query(
     'SELECT * FROM reports WHERE user_id = $1 ORDER BY date_created DESC',
@@ -28,5 +61,5 @@ const getReportsByUser = async (userId) => {
 module.exports = {
   createReport,
   getAllReports,
-  getReportsByUser,
+  getReportsByUser
 };

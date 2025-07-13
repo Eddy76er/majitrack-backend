@@ -1,7 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
-// ✅ Create a new user (with password hashing)
+// ✅ Create a new user with hashed password
 const createUser = async ({ name, phoneNumber, password, role }) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -15,13 +15,13 @@ const createUser = async ({ name, phoneNumber, password, role }) => {
   return result.rows[0];
 };
 
-// ✅ Get all users
+// ✅ Get all users (admin use)
 const getAllUsers = async () => {
   const result = await db.query('SELECT * FROM users');
   return result.rows;
 };
 
-// ✅ Get a user by phone number (optional if still needed)
+// ✅ Get a user by phone number (used for phone login)
 const getUserByPhone = async (phoneNumber) => {
   const result = await db.query(
     'SELECT * FROM users WHERE phone_number = $1',
@@ -30,7 +30,7 @@ const getUserByPhone = async (phoneNumber) => {
   return result.rows[0];
 };
 
-// ✅ Get a user by user ID (for login with user ID)
+// ✅ Get a user by ID (used for attaching name/phone to reports)
 const getUserById = async (userId) => {
   const result = await db.query(
     'SELECT * FROM users WHERE user_id = $1',
