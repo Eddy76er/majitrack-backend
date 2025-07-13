@@ -7,7 +7,7 @@ const { authenticateToken, requireResident } = require('../middlewares/auth');
 const multer = require('multer');
 const path = require('path');
 
-// ✅ Configure multer for image upload
+// ✅ Configure multer for image uploads
 const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: (req, file, cb) => {
@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ✅ Route: Submit report (Resident only + optional image)
+// ✅ Submit a new report (Residents only, image optional)
 router.post(
   '/',
   authenticateToken,
@@ -27,10 +27,10 @@ router.post(
   reportController.submitReport
 );
 
-// ✅ Route: View all reports (any logged-in user)
+// ✅ Get all reports (Any logged-in user)
 router.get('/', authenticateToken, reportController.getAllReports);
 
-// ✅ Route: View reports by user (optional, for resident "My Reports" page)
+// ✅ Get all reports submitted by a specific user
 router.get('/user/:userId', authenticateToken, reportController.getUserReports);
 
 module.exports = router;

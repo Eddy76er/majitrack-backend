@@ -1,5 +1,29 @@
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
 /**
- * Middleware to restrict route to admin users only
+ * Middleware to authenticate and verify JWT token
+ */
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Expecting: Bearer <token>
+
+  if (!token) {
+    return res.status(401).json({ message: 'Token missing or unauthorized' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // { userId, role, name }
+    next();
+  } catch (err) {
+    console.error('JWT error:', err);
+    return res.status(403).json({ message: 'Invalid or expired token' });
+  }
+};
+
+/**
+ * Middleware to restrict access to admin users only
  */
 const requireAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') {
@@ -9,7 +33,7 @@ const requireAdmin = (req, res, next) => {
 };
 
 /**
- * Middleware to restrict route to resident users only
+ * Middleware to restrict access to resident users only
  */
 const requireResident = (req, res, next) => {
   if (!req.user || req.user.role !== 'resident') {
@@ -19,7 +43,7 @@ const requireResident = (req, res, next) => {
 };
 
 module.exports = {
+  authenticateToken,
   requireAdmin,
-  requireResident,
+  requireResident
 };
-
