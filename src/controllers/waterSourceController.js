@@ -1,9 +1,15 @@
 const waterSourceModel = require('../models/waterSourceModel');
 
+// ✅ Controller to create new water source
 const createWaterSource = async (req, res) => {
   try {
-    const { type, location } = req.body;
-    const source = await waterSourceModel.createWaterSource(type, location);
+    const { water_source_type, location } = req.body;
+
+    if (!water_source_type || !location) {
+      return res.status(400).json({ message: 'Both water_source_type and location are required' });
+    }
+
+    const source = await waterSourceModel.createWaterSource(water_source_type, location);
     res.status(201).json(source);
   } catch (error) {
     console.error('Error creating water source:', error);
@@ -11,6 +17,7 @@ const createWaterSource = async (req, res) => {
   }
 };
 
+// ✅ Controller to fetch all water sources
 const getWaterSources = async (req, res) => {
   try {
     const sources = await waterSourceModel.getAllWaterSources();
