@@ -1,23 +1,23 @@
 const db = require('../config/db');
 
-// ✅ Submit a new report (with Cloudinary image URL)
+// ✅ Submit a new report (using water_source_id and Cloudinary image URL)
 const createReport = async ({
   userId,
   name,
   phone_number,
-  location,
+  water_source_id,
   water_source_type,
   description,
   status,
   date_created,
-  imageUrl // Now using imageUrl instead of imagePath
+  imageUrl // Cloudinary image URL
 }) => {
   const result = await db.query(
     `INSERT INTO reports (
       user_id,
       name,
       phone_number,
-      location,
+      water_source_id,
       water_source_type,
       description,
       status,
@@ -29,30 +29,37 @@ const createReport = async ({
       userId,
       name,
       phone_number,
-      location,
+      water_source_id,
       water_source_type,
       description,
       status,
       date_created,
-      imageUrl // Cloudinary image URL
+      imageUrl
     ]
   );
 
   return result.rows[0];
 };
 
-// ✅ Get all reports (admin)
+// ✅ Get all reports (for admin)
 const getAllReports = async () => {
   const result = await db.query(
-    'SELECT * FROM reports ORDER BY date_created DESC'
+    `SELECT r.*, w.location 
+     FROM reports r
+     JOIN water_sources w ON r.water_source_id = w.water_source_id
+     ORDER BY r.date_created DESC`
   );
   return result.rows;
 };
 
-// ✅ Get all reports by a specific user
+// ✅ Get reports for specific user
 const getReportsByUser = async (userId) => {
   const result = await db.query(
-    'SELECT * FROM reports WHERE user_id = $1 ORDER BY date_created DESC',
+    `SELECT r.*, w.location 
+     FROM reports r
+     JOIN water_sources w ON r.water_source_id = w.water_source_id
+     WHERE r.user_id = $1
+     ORDER BY r.date_created DESC`,
     [userId]
   );
   return result.rows;

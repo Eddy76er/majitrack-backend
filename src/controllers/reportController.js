@@ -1,43 +1,40 @@
 const reportModel = require('../models/reportModel');
-const userModel = require('../models/userModel'); // To fetch name and phone from users
+const userModel = require('../models/userModel');
 const cloudinary = require('cloudinary').v2;
 
 // ✅ Submit a new water issue report
 const submitReport = async (req, res) => {
   try {
-    const userId = req.user.userId; // Extracted from token by auth middleware
+    const userId = req.user.userId;
 
     const {
-      location,
+      water_source_id,
       water_source_type,
       description,
       status = 'pending',
       date_created
     } = req.body;
 
-    // ✅ Get user details for auto-attaching name and phone number
     const user = await userModel.getUserById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // ✅ Get the uploaded image's Cloudinary URL if image exists
     let imageUrl = null;
     if (req.file && req.file.path) {
-      imageUrl = req.file.path; // This is the Cloudinary-hosted URL
+      imageUrl = req.file.path; // Cloudinary URL
     }
 
-    // ✅ Save report with all required fields
     const report = await reportModel.createReport({
       userId,
       name: user.name,
       phone_number: user.phone_number,
-      location,
+      water_source_id,
       water_source_type,
       description,
       status,
       date_created,
-      imagePath: imageUrl
+      imageUrl
     });
 
     res.status(201).json({
@@ -51,7 +48,7 @@ const submitReport = async (req, res) => {
   }
 };
 
-// ✅ Get all reports (admin use)
+// ✅ Get all reports (admin)
 const getAllReports = async (req, res) => {
   try {
     const reports = await reportModel.getAllReports();
@@ -62,7 +59,7 @@ const getAllReports = async (req, res) => {
   }
 };
 
-// ✅ Get reports submitted by a specific user
+// ✅ Get reports by user ID
 const getUserReports = async (req, res) => {
   try {
     const { userId } = req.params;
