@@ -1,5 +1,6 @@
 const reportModel = require('../models/reportModel');
 const userModel = require('../models/userModel'); // To fetch name and phone from users
+const cloudinary = require('cloudinary').v2;
 
 // ✅ Submit a new water issue report
 const submitReport = async (req, res) => {
@@ -14,12 +15,16 @@ const submitReport = async (req, res) => {
       date_created
     } = req.body;
 
-    const imagePath = req.file ? req.file.path : null; // Image from multer upload
-
     // ✅ Get user details for auto-attaching name and phone number
     const user = await userModel.getUserById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    // ✅ Get the uploaded image's Cloudinary URL if image exists
+    let imageUrl = null;
+    if (req.file && req.file.path) {
+      imageUrl = req.file.path; // This is the Cloudinary-hosted URL
     }
 
     // ✅ Save report with all required fields
@@ -32,7 +37,7 @@ const submitReport = async (req, res) => {
       description,
       status,
       date_created,
-      imagePath
+      imagePath: imageUrl
     });
 
     res.status(201).json({

@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-// ✅ Submit a new report (with name, phone, image, etc.)
+// ✅ Submit a new report (with Cloudinary image URL)
 const createReport = async ({
   userId,
   name,
@@ -10,7 +10,7 @@ const createReport = async ({
   description,
   status,
   date_created,
-  imagePath
+  imageUrl // Now using imageUrl instead of imagePath
 }) => {
   const result = await db.query(
     `INSERT INTO reports (
@@ -34,7 +34,7 @@ const createReport = async ({
       description,
       status,
       date_created,
-      imagePath
+      imageUrl // Cloudinary image URL
     ]
   );
 
