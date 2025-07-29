@@ -35,12 +35,14 @@ const reportRoutes = require('./routes/reportRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const authRoutes = require('./routes/authRoutes');
+const adminResponsesRoute = require('./routes/adminResponsesRoute'); // ✅ NEW
 
 // ✅ Mount routes
 app.use('/api/users', userRoutes);
 app.use('/api/water-sources', waterSourceRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/responses', adminResponsesRoute); // ✅ NEW LINE
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth', authRoutes);
 
