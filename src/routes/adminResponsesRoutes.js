@@ -1,11 +1,6 @@
-adminResponsesRoutes.js
 const express = require('express');
 const router = express.Router();
-const { sendAdminResponse } = require('../controllers/adminResponsesController');
-
-// @route   POST /api/admin-responses
-// @desc    Admin sends a response to a report
-// @access  Admin only
-router.post('/', sendAdminResponse);
+const { sendResponse } = require('../controllers/adminResponsesController');  // 👈 Changed to sendResponse
+router.post('/', sendResponse);
 
 module.exports = router;

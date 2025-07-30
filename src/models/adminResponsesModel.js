@@ -1,33 +1,47 @@
-adminResponsesModel.js
+// adminResponsesModel.js
 const db = require('../config/db');
+const { v4: uuidv4 } = require('uuid');
+const { createNotification } = require('./notificationModel');
 
-const createAdminResponse = async ({ report_id, comments, status }) => {
+const sendResponse = async ({ report_id, comments, status }) => {
   try {
-    // Get user_id and water_source_id from the reports table
+    // 1. Get user_id from report
     const reportData = await db.query(
-      'SELECT user_id, water_source_id FROM reports WHERE report_id = $1',
+      'SELECT user_id FROM reports WHERE report_id = $1',
       [report_id]
     );
 
     if (reportData.rows.length === 0) {
-      throw new Error('Report not found.');
+      throw new Error('Report not found');
     }
 
-    const { user_id, water_source_id } = reportData.rows[0];
+    const { user_id } = reportData.rows[0];
+    const response_id = uuidv4();
     const date_sent = new Date();
 
+    // 2. Insert response
     const response = await db.query(
-      `INSERT INTO admin_responses (report_id, user_id, comments, status, date_sent)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO admin_responses 
+       (response_id, report_id, user_id, comments, status, date_sent)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [report_id, user_id, comments, status, date_sent]
+      [response_id, report_id, user_id, comments, status, date_sent]
     );
 
-    // Also update the status of the report to prevent re-resolving
+    // 3. Update report status
     await db.query(
       `UPDATE reports SET status = $1 WHERE report_id = $2`,
-      ['resolved', report_id]
+      [status, report_id]
     );
+
+    // 4. Create notification using the notificationModel
+    await createNotification({
+      user_id: user_id,
+      report_id: report_id,
+      message: comments,
+      status: status,
+      date_received: date_sent
+    });
 
     return response.rows[0];
   } catch (error) {
@@ -35,6 +49,15 @@ const createAdminResponse = async ({ report_id, comments, status }) => {
   }
 };
 
+const getResponseByReport = async (reportId) => {
+  const result = await db.query(
+    'SELECT * FROM admin_responses WHERE report_id = $1',
+    [reportId]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
-  createAdminResponse,
+  sendResponse,
+  getResponseByReport
 };
