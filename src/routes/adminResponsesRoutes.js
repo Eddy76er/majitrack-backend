@@ -1,3 +1,4 @@
+adminResponsesRoutes.js
 const express = require('express');
 const router = express.Router();
 const { sendAdminResponse } = require('../controllers/adminResponsesController');
@@ -8,4 +9,3 @@ const { sendAdminResponse } = require('../controllers/adminResponsesController')
 router.post('/', sendAdminResponse);
 
 module.exports = router;
-
