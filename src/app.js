@@ -42,7 +42,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/water-sources', waterSourceRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/admin/responses', adminResponsesRoutes); // ✅ NEW LINE
+app.use('/api/admin-responses', adminResponsesRoutes); // ✅ NEW LINE
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth', authRoutes);
 
