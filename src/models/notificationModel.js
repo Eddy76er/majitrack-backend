@@ -1,27 +1,27 @@
-const db = require('../config/db');
+// notificationModel.js
 
-// Create a notification/
-const createNotification = async ({ user_id, report_id, message, status }) => {
-  const result = await db.query(
-    `INSERT INTO notifications 
-     (notification_id, user_id, report_id, message, status, date_received)
-     VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING *`,
-    [uuidv4(), user_id, report_id, message, status, new Date()]
+const db = require('../config/db');
+const { v4: uuidv4 } = require('uuid');
+
+const createNotification = async ({ user_id, report_id, message, status, date_received }) => {
+  const notification_id = uuidv4();
+
+  await db.query(
+    `INSERT INTO notifications (notification_id, user_id, report_id, message, status, date_received)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [notification_id, user_id, report_id, message, status, date_received]
   );
-  return result.rows[0];
 };
 
-// Get notifications by user
-const getNotificationsByUser = async (userId) => {
+const getNotificationsByUser = async (user_id) => {
   const result = await db.query(
-    'SELECT * FROM notifications WHERE user_id = $1 ORDER BY date_received DESC',
-    [userId]
+    `SELECT * FROM notifications WHERE user_id = $1 ORDER BY date_received DESC`,
+    [user_id]
   );
   return result.rows;
 };
 
 module.exports = {
   createNotification,
-  getNotificationsByUser,
+  getNotificationsByUser
 };

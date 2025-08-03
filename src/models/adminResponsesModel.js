@@ -1,63 +1,55 @@
 // adminResponsesModel.js
+
 const db = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const { createNotification } = require('./notificationModel');
 
 const sendResponse = async ({ report_id, comments, status }) => {
-  try {
-    // 1. Get user_id from report
-    const reportData = await db.query(
-      'SELECT user_id FROM reports WHERE report_id = $1',
-      [report_id]
-    );
+  const parsedReportId = parseInt(report_id, 10);
+  const date_sent = new Date();
 
-    if (reportData.rows.length === 0) {
-      throw new Error('Report not found');
-    }
-
-    const { user_id } = reportData.rows[0];
-    const response_id = uuidv4();
-    const date_sent = new Date();
-
-    // 2. Insert response
-    const response = await db.query(
-      `INSERT INTO admin_responses 
-       (response_id, report_id, user_id, comments, status, date_sent)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [response_id, report_id, user_id, comments, status, date_sent]
-    );
-
-    // 3. Update report status
-    await db.query(
-      `UPDATE reports SET status = $1 WHERE report_id = $2`,
-      [status, report_id]
-    );
-
-    // 4. Create notification using the notificationModel
-    await createNotification({
-      user_id: user_id,
-      report_id: report_id,
-      message: comments,
-      status: status,
-      date_received: date_sent
-    });
-
-    return response.rows[0];
-  } catch (error) {
-    throw error;
+  if (!parsedReportId || !comments || !status) {
+    throw new Error('Missing required fields.');
   }
-};
 
-const getResponseByReport = async (reportId) => {
-  const result = await db.query(
-    'SELECT * FROM admin_responses WHERE report_id = $1',
-    [reportId]
+  // 1. Get user_id from the report
+  const reportResult = await db.query(
+    'SELECT user_id FROM reports WHERE report_id = $1',
+    [parsedReportId]
   );
-  return result.rows[0];
+
+  if (reportResult.rows.length === 0) {
+    throw new Error('Report not found.');
+  }
+
+  const { user_id } = reportResult.rows[0];
+  const response_id = uuidv4();
+
+  // 2. Insert the admin response
+  await db.query(
+    `INSERT INTO admin_responses (response_id, report_id, user_id, comments, status, date_sent)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [response_id, parsedReportId, user_id, comments, status, date_sent]
+  );
+
+  // 3. Update the report's status
+  await db.query(
+    `UPDATE reports SET status = $1 WHERE report_id = $2`,
+    [status, parsedReportId]
+  );
+
+  // 4. Create notification for the user
+  await createNotification({
+    user_id,
+    report_id: parsedReportId,
+    message: comments,
+    status,
+    date_received: date_sent
+  });
+
+  return { message: 'Response and notification successfully processed.' };
 };
 
 module.exports = {
-  sendResponse,
-  getResponseByReport
+  sendResponse
 };
