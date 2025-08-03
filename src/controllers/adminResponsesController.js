@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 
 exports.sendResponse = async (req, res) => {
   const { comments, status } = req.body;
-  const { report_id } = req.query; // Get report_id from query string
+  const { report_id } = req.body; // Get report_id from query string
   const date_sent = new Date();
 
   // Basic validation
