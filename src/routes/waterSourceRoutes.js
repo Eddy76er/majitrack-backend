@@ -1,11 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const { validateUUIDParam } = require('../middlewares/uuidValidator'); // ✅ UUID validator
 const waterSourceController = require('../controllers/waterSourceController');
 
-// POST /api/water-sources - add a new water source
+// ✅ POST /api/water-sources - add a new water source
 router.post('/', waterSourceController.createWaterSource);
 
-// GET /api/water-sources - get all water sources
+// ✅ GET /api/water-sources - get all water sources
 router.get('/', waterSourceController.getWaterSources);
+
+// (Optional future usage)
+// ✅ Example: GET /api/water-sources/:waterSourceId
+// router.get('/:waterSourceId', validateUUIDParam('waterSourceId'), waterSourceController.getWaterSourceById);
 
 module.exports = router;

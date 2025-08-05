@@ -3,8 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 
 exports.sendResponse = async (req, res) => {
   try {
-    const { report_id: rawReportId, comments, status } = req.body;
-    const report_id = parseInt(rawReportId, 10); // Ensure report_id is integer
+    const { report_id, comments, status } = req.body;
     const date_sent = new Date();
 
     // Basic validation

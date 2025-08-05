@@ -5,10 +5,10 @@ const cloudinary = require('cloudinary').v2;
 // ✅ Submit a new water issue report
 const submitReport = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.userId; // UUID from middleware
 
     const {
-      water_source_id,
+      water_source_id, // UUID
       water_source_type,
       description,
       status = 'pending',
@@ -62,7 +62,7 @@ const getAllReports = async (req, res) => {
 // ✅ Get reports by user ID
 const getUserReports = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.params; // UUID
     const reports = await reportModel.getReportsByUser(userId);
     res.json(reports);
   } catch (error) {
@@ -76,3 +76,4 @@ module.exports = {
   getAllReports,
   getUserReports
 };
+

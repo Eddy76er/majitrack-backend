@@ -5,6 +5,18 @@ const adminController = require('../controllers/adminController');
 const authenticateToken = require('../middlewares/authenticateToken');
 const { requireAdmin } = require('../middlewares/auth');
 
+// Middleware to validate UUID format for reportId
+function validateUUID(req, res, next) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const { reportId } = req.params;
+
+  if (!uuidRegex.test(reportId)) {
+    return res.status(400).json({ error: 'Invalid UUID format for reportId' });
+  }
+
+  next();
+}
+
 /**
  * @route POST /admin/respond/:reportId
  * @desc Admin submits response to a report
@@ -21,6 +33,7 @@ router.post(
   '/respond/:reportId',
   authenticateToken,
   requireAdmin,
+  validateUUID,
   adminController.respondToReport
 );
 
@@ -38,6 +51,7 @@ router.get(
   '/response/:reportId',
   authenticateToken,
   requireAdmin,
+  validateUUID,
   adminController.getResponse
 );
 

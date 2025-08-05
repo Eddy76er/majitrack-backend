@@ -1,10 +1,20 @@
 const adminResponsesModel = require('../models/adminResponsesModel');
 const reportModel = require('../models/reportModel');
+const { validate: isValidUUID } = require('uuid');
 
 const respondToReport = async (req, res) => {
   try {
     const { reportId } = req.params;
     const { adminUserId, comments } = req.body;
+
+    // ✅ Validate UUIDs
+    if (!isValidUUID(reportId)) {
+      return res.status(400).json({ message: 'Invalid report ID format (UUID expected)' });
+    }
+
+    if (!isValidUUID(adminUserId)) {
+      return res.status(400).json({ message: 'Invalid admin user ID format (UUID expected)' });
+    }
 
     // Create response entry using the new model
     const response = await adminResponsesModel.sendResponse({
@@ -13,10 +23,6 @@ const respondToReport = async (req, res) => {
       status: 'resolved', // Maintaining same functionality as markReportResolved
       adminUserId // This will be available in the model if needed
     });
-
-    // Update report status (now handled within sendResponse)
-    // Original markReportResolved functionality is now integrated
-    // in adminResponsesModel.sendResponse
 
     res.status(200).json(response);
   } catch (error) {
@@ -31,6 +37,12 @@ const respondToReport = async (req, res) => {
 const getResponse = async (req, res) => {
   try {
     const { reportId } = req.params;
+
+    // ✅ Validate UUID
+    if (!isValidUUID(reportId)) {
+      return res.status(400).json({ message: 'Invalid report ID format (UUID expected)' });
+    }
+
     const response = await adminResponsesModel.getResponseByReport(reportId);
     
     if (!response) {

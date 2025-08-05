@@ -15,7 +15,7 @@ const registerUser = async (req, res) => {
     res.status(201).json({
       message: '✅ User registered successfully',
       user: {
-        id: user.user_id,
+        id: user.user_id, // UUID format
         name: user.name,
         phoneNumber: user.phone_number,
         role: user.role

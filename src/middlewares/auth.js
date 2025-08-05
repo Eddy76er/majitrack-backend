@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { validate: isUuid } = require('uuid');
 require('dotenv').config();
 
 /**
@@ -14,6 +15,12 @@ const authenticateToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // ✅ Validate UUID for userId
+    if (!decoded.userId || !isUuid(decoded.userId)) {
+      return res.status(400).json({ message: 'Invalid user ID format' });
+    }
+
     req.user = decoded; // { userId, role, name }
     next();
   } catch (err) {

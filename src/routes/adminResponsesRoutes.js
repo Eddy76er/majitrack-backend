@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { sendResponse } = require('../controllers/adminResponsesController');  // 👈 Changed to sendResponse
-router.post('/', sendResponse);
+const validateUUID = require('../middleware/validateUUID');
+const adminResponsesController = require('../controllers/adminResponsesController');
+
+// Send a response (report_id is validated)
+router.post('/', adminResponsesController.sendResponse);
+
+// View response by report_id
+router.get('/:reportId', validateUUID('reportId'), adminResponsesController.getResponseByReportId);
 
 module.exports = router;

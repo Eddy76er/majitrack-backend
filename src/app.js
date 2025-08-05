@@ -28,6 +28,9 @@ app.get('/', (req, res) => {
 const setupSwagger = require('./config/swagger');
 setupSwagger(app); // Available at /api-docs
 
+// ✅ Middleware for UUID validation (imported for use in routes)
+const validateUUID = require('./middlewares/validateUUID');
+
 // ✅ Route imports
 const userRoutes = require('./routes/userRoutes');
 const waterSourceRoutes = require('./routes/waterSourceRoutes');
@@ -51,3 +54,4 @@ const errorHandler = require('./middlewares/errorHandler');
 app.use(errorHandler);
 
 module.exports = app;
+

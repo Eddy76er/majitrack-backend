@@ -1,3 +1,4 @@
+const { validate: isUuid } = require('uuid');
 const notificationModel = require('../models/notificationModel');
 
 // POST /api/notifications
@@ -7,6 +8,11 @@ const sendNotification = async (req, res) => {
 
     if (!user_id || !report_id || !message || !status) {
       return res.status(400).json({ message: 'Missing required fields.' });
+    }
+
+    // UUID validation
+    if (!isUuid(user_id) || !isUuid(report_id)) {
+      return res.status(400).json({ message: 'Invalid UUID format for user_id or report_id.' });
     }
 
     const date_received = new Date();
@@ -30,6 +36,12 @@ const sendNotification = async (req, res) => {
 const getUserNotifications = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    // UUID validation
+    if (!isUuid(userId)) {
+      return res.status(400).json({ message: 'Invalid UUID format for userId.' });
+    }
+
     const notifications = await notificationModel.getNotificationsByUser(userId);
     res.json(notifications);
   } catch (error) {
@@ -42,4 +54,3 @@ module.exports = {
   sendNotification,
   getUserNotifications
 };
-

@@ -1,11 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notificationController');
+const { validateUUID } = require('../middlewares/validateUUID');
 
-// POST /api/notifications - send a notification
+/**
+ * @route POST /api/notifications
+ * @desc Send a notification
+ * @access Public or Protected (depending on your design)
+ */
 router.post('/', notificationController.sendNotification);
 
-// GET /api/notifications/user/:userId - get notifications for a user
-router.get('/user/:userId', notificationController.getUserNotifications);
+/**
+ * @route GET /api/notifications/user/:userId
+ * @desc Get notifications for a user by UUID
+ * @access Public or Protected
+ * @param {string} userId.path.required - UUID of the user
+ */
+router.get('/user/:userId', validateUUID('userId'), notificationController.getUserNotifications);
 
 module.exports = router;

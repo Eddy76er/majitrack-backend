@@ -22,7 +22,11 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user.user_id, role: user.role, name: user.name },
+      {
+        userId: user.user_id,  // UUID used here
+        role: user.role,
+        name: user.name
+      },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
     );
@@ -31,7 +35,7 @@ const login = async (req, res) => {
       message: 'Login successful',
       token,
       user: {
-        id: user.user_id,
+        id: user.user_id,      // UUID returned here
         name: user.name,
         role: user.role,
       },
@@ -43,4 +47,3 @@ const login = async (req, res) => {
 };
 
 module.exports = { login };
-
