@@ -2,17 +2,23 @@
 
 const express = require('express');
 const router = express.Router();
-const validateUUID = require('../middlewares/validateUUID'); // ✅ Corrected import
+
+// ✅ Correct middleware and controller imports
+const validateUUID = require('../middlewares/validateUUID');
 const waterSourceController = require('../controllers/waterSourceController');
 
-// ✅ POST /api/water-sources - add a new water source
+// ✅ POST /api/water-sources - Add a new water source
 router.post('/', waterSourceController.createWaterSource);
 
-// ✅ GET /api/water-sources - get all water sources
+// ✅ GET /api/water-sources - Get all water sources
 router.get('/', waterSourceController.getWaterSources);
 
-// ✅ (GET /api/water-sources/:waterSourceId
-
-router.get('/:waterSourceId', validateUUID('waterSourceId'), waterSourceController.getWaterSourceById);
+// ✅ GET /api/water-sources/:waterSourceId - Get a specific water source by UUID
+router.get(
+  '/:waterSourceId',
+  validateUUID('waterSourceId'), // Validate UUID param
+  waterSourceController.getWaterSourceById
+);
 
 module.exports = router;
+
