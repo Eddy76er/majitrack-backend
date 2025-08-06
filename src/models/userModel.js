@@ -41,10 +41,21 @@ const deleteUserById = async (id) => {
   return result.rowCount > 0; // true if deleted, false otherwise
 };
 
+// ✅ Get user by phone number
+const getUserByPhone = async (phoneNumber) => {
+  const result = await db.query(
+    `SELECT * FROM users WHERE phone_number = $1`,
+    [phoneNumber]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   createUser,
   getAllUsers,
   getUserById,
-  deleteUserById
+  deleteUserById,
+  getUserByPhone
 };
+
 

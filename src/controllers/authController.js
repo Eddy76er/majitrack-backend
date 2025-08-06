@@ -1,3 +1,5 @@
+// src/controllers/authController.js
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const userModel = require('../models/userModel');
@@ -23,7 +25,7 @@ const login = async (req, res) => {
 
     const token = jwt.sign(
       {
-        userId: user.user_id,  // UUID used here
+        userId: user.user_id,
         role: user.role,
         name: user.name
       },
@@ -35,7 +37,7 @@ const login = async (req, res) => {
       message: 'Login successful',
       token,
       user: {
-        id: user.user_id,      // UUID returned here
+        id: user.user_id,
         name: user.name,
         role: user.role,
       },
