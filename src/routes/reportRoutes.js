@@ -3,7 +3,7 @@ const router = express.Router();
 
 const reportController = require('../controllers/reportController');
 const { authenticateToken, requireResident } = require('../middlewares/auth');
-const { validateUUID } = require('../middlewares/validateUUID');
+const validateUUID = require('../middlewares/validateUUID')
 
 // ✅ Use Cloudinary-based multer config
 const upload = require('../config/multerConfig');
