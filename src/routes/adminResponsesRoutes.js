@@ -1,12 +1,13 @@
+// routes/adminResponsesRoutes.js
 const express = require('express');
 const router = express.Router();
 const validateUUID = require('../middlewares/validateUUID');
 const adminResponsesController = require('../controllers/adminResponsesController');
 
-// Send a response (report_id is validated)
+// POST: Send a response to a report
 router.post('/', adminResponsesController.sendResponse);
 
-// View response by report_id
+// GET: View a specific response by report_id
 router.get('/:reportId', validateUUID('reportId'), adminResponsesController.getResponseByReportId);
 
 module.exports = router;
