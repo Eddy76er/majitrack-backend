@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const validateUUID = require('../middleware/validateUUID');
+const validateUUID = require('../middlewares/validateUUID');
 const adminResponsesController = require('../controllers/adminResponsesController');
 
 // Send a response (report_id is validated)
