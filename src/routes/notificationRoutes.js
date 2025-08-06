@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notificationController');
-const { validateUUID } = require('../middlewares/validateUUID');
+const validateUUID = require('../middlewares/validateUUID')
 
 /**
  * @route POST /api/notifications
