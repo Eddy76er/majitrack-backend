@@ -8,7 +8,7 @@ const submitReport = async (req, res) => {
     const userId = req.user.userId; // UUID from middleware
 
     const {
-      water_source_id, // UUID
+      water_source_id,
       water_source_type,
       description,
       status = 'pending',
@@ -22,7 +22,7 @@ const submitReport = async (req, res) => {
 
     let imageUrl = null;
     if (req.file && req.file.path) {
-      imageUrl = req.file.path; // Cloudinary URL
+      imageUrl = req.file.path;
     }
 
     const report = await reportModel.createReport({
@@ -62,7 +62,7 @@ const getAllReports = async (req, res) => {
 // ✅ Get reports by user ID
 const getUserReports = async (req, res) => {
   try {
-    const { userId } = req.params; // UUID
+    const { userId } = req.params;
     const reports = await reportModel.getReportsByUser(userId);
     res.json(reports);
   } catch (error) {
@@ -76,4 +76,3 @@ module.exports = {
   getAllReports,
   getUserReports
 };
-
