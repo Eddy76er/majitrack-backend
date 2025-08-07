@@ -1,4 +1,3 @@
-// adminResponsesController.js
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const { createNotification } = require('../models/notificationModel');
@@ -7,6 +6,10 @@ const { createNotification } = require('../models/notificationModel');
 exports.sendResponse = async (req, res) => {
   try {
     const { report_id, comments, status } = req.body;
+
+    if (!report_id || !comments || !status) {
+      return res.status(400).json({ message: 'Missing required fields.' });
+    }
 
     // 1. Get user_id and water_source_id from the report
     const reportResult = await pool.query(
@@ -20,7 +23,11 @@ exports.sendResponse = async (req, res) => {
 
     const { user_id, water_source_id } = reportResult.rows[0];
 
-    // 2. Create response
+    if (!user_id || !water_source_id) {
+      return res.status(500).json({ message: 'user_id or water_source_id missing in report.' });
+    }
+
+    // 2. Insert admin response
     const response_id = uuidv4();
     const date_sent = new Date();
 
@@ -37,16 +44,24 @@ exports.sendResponse = async (req, res) => {
       [status, report_id]
     );
 
-    // 4. Create a notification
+    // 4. Send notification to user
     const message = `Your report (${report_id}) has been marked as ${status}.`;
-    await createNotification({ user_id, report_id, message, status });
+
+    await createNotification({
+      user_id,
+      report_id,
+      message,
+      status,
+    });
 
     res.status(201).json({
       message: '✅ Response sent successfully.',
-      response: responseResult.rows[0]
+      response: responseResult.rows[0],
     });
+
   } catch (error) {
-    console.error('❌ Error sending response:', error);
+    console.error('❌ Error sending response:', error.message);
+    console.error(error.stack); // <--- Show full error trace
     res.status(500).json({ message: '❌ Failed to send response.' });
   }
 };
@@ -67,7 +82,8 @@ exports.getResponseByReportId = async (req, res) => {
 
     res.status(200).json(responseResult.rows[0]);
   } catch (error) {
-    console.error('❌ Error fetching response by reportId:', error);
+    console.error('❌ Error fetching response by reportId:', error.message);
+    console.error(error.stack);
     res.status(500).json({ message: '❌ Failed to fetch response.' });
   }
 };
