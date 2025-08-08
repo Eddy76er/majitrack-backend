@@ -44,8 +44,8 @@ exports.sendResponse = async (req, res) => {
       [status, report_id]
     );
 
-    // 4. Send notification to user
-    const message = `Your report (${report_id}) has been marked as ${status}.`;
+    // 4. Send notification to user (use admin's comment as message)
+    const message = comments;
 
     await createNotification({
       user_id,
@@ -61,10 +61,11 @@ exports.sendResponse = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error sending response:', error.message);
-    console.error(error.stack); // <--- Show full error trace
+    console.error(error.stack);
     res.status(500).json({ message: '❌ Failed to send response.' });
   }
 };
+
 
 // Get a response by report_id
 exports.getResponseByReportId = async (req, res) => {
