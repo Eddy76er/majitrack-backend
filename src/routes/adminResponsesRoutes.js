@@ -3,8 +3,9 @@ const express = require('express');
 const router = express.Router();
 const validateUUID = require('../middlewares/validateUUID');
 const adminResponsesController = require('../controllers/adminResponsesController');
+const pool = require('../config/db'); // ✅ Import from db.js
 
-// Get all responses by specific admin (user_id)
+// ✅ Get all responses by specific admin (user_id)
 router.get("/admin/:adminId", async (req, res) => {
   const { adminId } = req.params;
 
@@ -31,10 +32,11 @@ router.get("/admin/:adminId", async (req, res) => {
   }
 });
 
-// POST: Send a response to a report
+// ✅ POST: Send a response to a report
 router.post('/', adminResponsesController.sendResponse);
 
-// GET: View a specific response by report_id
+// ✅ GET: View a specific response by report_id
 router.get('/:reportId', validateUUID('reportId'), adminResponsesController.getResponseByReportId);
 
-module.exports = router;
+module.exports = router; // ✅ Only export the router
+
