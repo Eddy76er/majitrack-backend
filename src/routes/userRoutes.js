@@ -1,3 +1,5 @@
+// src/routes/userRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const validateUUID = require('../middlewares/validateUUID');
@@ -9,6 +11,13 @@ const userController = require('../controllers/userController');
  * @access  Public
  */
 router.post('/signup', userController.signup);
+
+/**
+ * @route   POST /api/users/login
+ * @desc    Authenticate user and return token
+ * @access  Public
+ */
+router.post('/login', userController.login);
 
 /**
  * @route   GET /api/users/:id

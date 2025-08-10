@@ -1,9 +1,15 @@
+// src/controllers/userController.js
 const bcrypt = require('bcryptjs');
 const userModel = require('../models/userModel');
 
-// ✅ Normalize phone number (optional Kenya format fix)
+// ✅ Normalize phone number to Kenya format (+2547...)
 const normalizePhoneNumber = (phone) => {
-  return phone.replace(/\s+/g, '').replace(/^0/, '+254');
+  if (!phone) return '';
+  let normalized = phone.replace(/\s+/g, '');
+  if (normalized.startsWith('0')) {
+    normalized = '+254' + normalized.slice(1);
+  }
+  return normalized;
 };
 
 // ✅ Signup new user (admin or resident)
@@ -25,14 +31,11 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: 'Phone number already registered' });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user in DB
+    // Create new user in DB (model handles hashing)
     const user = await userModel.createUser({
       name,
       phone_number,
-      password: hashedPassword,
+      password, // plain password, will be hashed in model
       role
     });
 
@@ -46,7 +49,7 @@ const signup = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('User registration error:', error);
+    console.error('❌ User registration error:', error);
     res.status(500).json({ message: 'Error creating user' });
   }
 };
@@ -66,12 +69,14 @@ const login = async (req, res) => {
     // Find user by phone number
     const user = await userModel.getUserByPhone(phone_number);
     if (!user) {
+      console.warn(`⚠️ Login failed: No user found with phone ${phone_number}`);
       return res.status(400).json({ message: 'Invalid phone number or password.' });
     }
 
     // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.warn(`⚠️ Login failed: Wrong password for user ${phone_number}`);
       return res.status(400).json({ message: 'Invalid phone number or password.' });
     }
 
@@ -85,7 +90,7 @@ const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error:', error);
     res.status(500).json({ message: 'Error logging in' });
   }
 };
@@ -96,7 +101,7 @@ const getUsers = async (req, res) => {
     const users = await userModel.getAllUsers();
     res.json(users);
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('❌ Error fetching users:', error);
     res.status(500).json({ message: 'Error fetching users' });
   }
 };
@@ -111,7 +116,7 @@ const getUserById = async (req, res) => {
     }
     res.json(user);
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error('❌ Error fetching user:', error);
     res.status(500).json({ message: 'Error fetching user' });
   }
 };
@@ -126,7 +131,7 @@ const deleteUserById = async (req, res) => {
     }
     res.json({ message: '✅ User deleted successfully' });
   } catch (error) {
-    console.error('Error deleting user:', error);
+    console.error('❌ Error deleting user:', error);
     res.status(500).json({ message: 'Error deleting user' });
   }
 };
@@ -138,5 +143,3 @@ module.exports = {
   getUserById,
   deleteUserById
 };
-
-
