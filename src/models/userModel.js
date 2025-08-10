@@ -1,21 +1,17 @@
 // src/models/userModel.js
 
 const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcrypt');
 const db = require('../config/db');
 
-// ✅ Create new user
+// ✅ Create new user (password already hashed in controller)
 const createUser = async ({ name, phone_number, password, role }) => {
   const user_id = uuidv4();
-
-  // Hash the password before storing
-  const hashedPassword = await bcrypt.hash(password, 10);
 
   const result = await db.query(
     `INSERT INTO users (user_id, name, phone_number, password, role)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING user_id, name, phone_number, role`,
-    [user_id, name, phone_number, hashedPassword, role]
+    [user_id, name, phone_number, password, role]
   );
 
   return result.rows[0];
@@ -53,7 +49,7 @@ const deleteUserById = async (id) => {
   return result.rowCount > 0; // true if deleted, false otherwise
 };
 
-// ✅ Get user by phone number
+// ✅ Get user by phone number (used for login)
 const getUserByPhone = async (phone_number) => {
   const result = await db.query(
     `SELECT * 
