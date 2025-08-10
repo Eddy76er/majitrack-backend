@@ -2,24 +2,25 @@
 
 const userModel = require('../models/userModel');
 
-// ✅ Register new user (admin or resident)
-const registerUser = async (req, res) => {
-  const { name, phoneNumber, password, role } = req.body;
+// ✅ Signup new user (admin or resident)
+const signup = async (req, res) => {
+  const { name, phone_number, password, role } = req.body;
 
   // Basic validation
-  if (!name || !phoneNumber || !password || !role) {
+  if (!name || !phone_number || !password || !role) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
   try {
-    const user = await userModel.createUser({ name, phoneNumber, password, role });
+    // Create new user in DB
+    const user = await userModel.createUser({ name, phone_number, password, role });
 
     res.status(201).json({
       message: '✅ User registered successfully',
       user: {
-        id: user.user_id, // UUID format
+        user_id: user.user_id, // UUID format
         name: user.name,
-        phoneNumber: user.phone_number,
+        phone_number: user.phone_number,
         role: user.role
       }
     });
@@ -71,7 +72,7 @@ const deleteUserById = async (req, res) => {
 };
 
 module.exports = {
-  registerUser,
+  signup,
   getUsers,
   getUserById,
   deleteUserById
