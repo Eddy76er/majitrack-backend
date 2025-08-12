@@ -2,14 +2,24 @@
 const bcrypt = require('bcryptjs');
 const userModel = require('../models/userModel');
 
-// ✅ Normalize phone number to Kenya format (+2547...)
+// ✅ Normalize phone number to Kenya local format (07xxxxxxxx)
 const normalizePhoneNumber = (phone) => {
-  if (!phone) return '';
-  let normalized = phone.replace(/\s+/g, '');
-  if (normalized.startsWith('0')) {
-    normalized = '+254' + normalized.slice(1);
+  if (!phone) return null;
+  let cleaned = phone.trim().replace(/\s+/g, '');
+
+  // Convert +2547xxxxxxxx or 2547xxxxxxxx → 07xxxxxxxx
+  if (cleaned.startsWith('+254')) {
+    cleaned = '0' + cleaned.slice(4);
+  } else if (cleaned.startsWith('254')) {
+    cleaned = '0' + cleaned.slice(3);
   }
-  return normalized;
+
+  // Ensure it starts with 07 and has exactly 10 digits
+  if (!/^07\d{8}$/.test(cleaned)) {
+    return null; // invalid format
+  }
+
+  return cleaned;
 };
 
 // ✅ Signup new user (admin or resident)
@@ -22,8 +32,11 @@ const signup = async (req, res) => {
   }
 
   try {
-    // Normalize phone number
+    // Normalize and validate phone number
     phone_number = normalizePhoneNumber(phone_number);
+    if (!phone_number) {
+      return res.status(400).json({ message: 'Invalid phone number format. Use 07xxxxxxxx' });
+    }
 
     // Check if user already exists
     const existingUser = await userModel.getUserByPhone(phone_number);
@@ -31,7 +44,7 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: 'Phone number already registered' });
     }
 
-    // Create new user in DB (model handles hashing)
+    // Create new user in DB (model should handle password hashing)
     const user = await userModel.createUser({
       name,
       phone_number,
@@ -63,8 +76,11 @@ const login = async (req, res) => {
   }
 
   try {
-    // Normalize phone number
+    // Normalize and validate phone number
     phone_number = normalizePhoneNumber(phone_number);
+    if (!phone_number) {
+      return res.status(400).json({ message: 'Invalid phone number format. Use 07xxxxxxxx' });
+    }
 
     // Find user by phone number
     const user = await userModel.getUserByPhone(phone_number);
@@ -143,3 +159,4 @@ module.exports = {
   getUserById,
   deleteUserById
 };
+
