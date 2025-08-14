@@ -1,52 +1,52 @@
 // src/models/userModel.js
-
 const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const db = require('../config/db');
 
-// ✅ Normalize phone number to Kenya local format (07xxxxxxxx)
+/**
+ * Normalize phone number to Kenya local format (07xxxxxxxx)
+ */
 const normalizePhoneNumber = (phone) => {
   if (!phone) return null;
   let cleaned = phone.trim().replace(/\s+/g, '');
 
-  // Convert +2547xxxxxxxx or 2547xxxxxxxx → 07xxxxxxxx
   if (cleaned.startsWith('+254')) {
     cleaned = '0' + cleaned.slice(4);
   } else if (cleaned.startsWith('254')) {
     cleaned = '0' + cleaned.slice(3);
   }
 
-  // Validate format
   if (!/^07\d{8}$/.test(cleaned)) {
-    return null; // Invalid
+    return null;
   }
-
   return cleaned;
 };
 
 /**
- * ✅ Create new user
- * Always hashes the password before saving to DB.
+ * Create a new user
+ * - Assumes password is already hashed before being passed
+ * - Normalizes phone number
  */
 const createUser = async ({ name, phone_number, password, role }) => {
   try {
     const user_id = uuidv4();
 
-    // Normalize phone number
     phone_number = normalizePhoneNumber(phone_number);
     if (!phone_number) {
       throw new Error('Invalid phone number format. Must be 07xxxxxxxx');
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // If password is not hashed, hash it here (safety net)
+    if (!password.startsWith('$2b$')) {
+      const salt = await bcrypt.genSalt(10);
+      password = await bcrypt.hash(password, salt);
+    }
 
     const result = await db.query(
       `INSERT INTO users (user_id, name, phone_number, password, role)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING user_id, name, phone_number, role`,
-      [user_id, name, phone_number, hashedPassword, role]
+      [user_id, name.trim(), phone_number, password, role.trim().toLowerCase()]
     );
 
     return result.rows[0];
@@ -57,13 +57,13 @@ const createUser = async ({ name, phone_number, password, role }) => {
 };
 
 /**
- * ✅ Get all users
+ * Get all users (excluding passwords)
  */
 const getAllUsers = async () => {
   try {
     const result = await db.query(
-      `SELECT user_id, name, phone_number, role 
-       FROM users 
+      `SELECT user_id, name, phone_number, role
+       FROM users
        ORDER BY name ASC`
     );
     return result.rows;
@@ -74,13 +74,13 @@ const getAllUsers = async () => {
 };
 
 /**
- * ✅ Get user by ID
+ * Get user by ID (excluding password)
  */
 const getUserById = async (id) => {
   try {
     const result = await db.query(
-      `SELECT user_id, name, phone_number, role 
-       FROM users 
+      `SELECT user_id, name, phone_number, role
+       FROM users
        WHERE user_id = $1`,
       [id]
     );
@@ -92,17 +92,17 @@ const getUserById = async (id) => {
 };
 
 /**
- * ✅ Delete user by ID
+ * Delete user by ID
  */
 const deleteUserById = async (id) => {
   try {
     const result = await db.query(
-      `DELETE FROM users 
-       WHERE user_id = $1 
+      `DELETE FROM users
+       WHERE user_id = $1
        RETURNING *`,
       [id]
     );
-    return result.rowCount > 0; // true if deleted
+    return result.rowCount > 0;
   } catch (error) {
     console.error('❌ Error deleting user in DB:', error.message);
     throw error;
@@ -110,22 +110,22 @@ const deleteUserById = async (id) => {
 };
 
 /**
- * ✅ Get user by phone number (used for login & duplicate check)
+ * Get user by phone number (returns full row for login password verification)
  */
 const getUserByPhone = async (phone_number) => {
   try {
     phone_number = normalizePhoneNumber(phone_number);
     if (!phone_number) {
-      return null; // Prevent DB query with invalid format
+      return null;
     }
 
     const result = await db.query(
-      `SELECT * 
-       FROM users 
+      `SELECT *
+       FROM users
        WHERE phone_number = $1`,
       [phone_number]
     );
-    return result.rows[0];
+    return result.rows[0] || null;
   } catch (error) {
     console.error('❌ Error fetching user by phone from DB:', error.message);
     throw error;
@@ -133,9 +133,10 @@ const getUserByPhone = async (phone_number) => {
 };
 
 module.exports = {
+  normalizePhoneNumber,
   createUser,
   getAllUsers,
   getUserById,
   deleteUserById,
-  getUserByPhone
+  getUserByPhone,
 };
