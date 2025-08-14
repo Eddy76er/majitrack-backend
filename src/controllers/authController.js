@@ -1,5 +1,3 @@
-// src/controllers/authController.js
-
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const userModel = require('../models/userModel');
@@ -32,7 +30,7 @@ const login = async (req, res) => {
   try {
     let { phoneNumber, password } = req.body;
 
-    // Check required fields
+    // Validate input
     if (!phoneNumber || !password) {
       return res.status(400).json({ message: 'Phone number and password are required' });
     }
@@ -46,12 +44,20 @@ const login = async (req, res) => {
     // Find user by phone
     const user = await userModel.getUserByPhone(phoneNumber);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      console.warn(`Login failed: No user found with phone ${phoneNumber}`);
+      return res.status(401).json({ message: 'Invalid phone number or password' });
+    }
+
+    // Ensure password exists in DB
+    if (!user.password) {
+      console.error(`Login error: User ${user.user_id} has no password stored`);
+      return res.status(500).json({ message: 'Account password missing. Contact admin.' });
     }
 
     // Compare password with hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password.trim(), user.password);
     if (!isMatch) {
+      console.warn(`Login failed: Password mismatch for phone ${phoneNumber}`);
       return res.status(401).json({ message: 'Invalid phone number or password' });
     }
 
@@ -60,7 +66,7 @@ const login = async (req, res) => {
       {
         userId: user.user_id,
         role: user.role,
-        name: user.name
+        name: user.name,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
@@ -74,7 +80,7 @@ const login = async (req, res) => {
         id: user.user_id,
         name: user.name,
         role: user.role,
-        phone_number: user.phone_number
+        phone_number: user.phone_number,
       },
     });
 
