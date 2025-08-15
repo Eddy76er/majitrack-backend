@@ -1,5 +1,5 @@
-// src/controllers/userController.js
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const userModel = require('../models/userModel');
 
 /**
@@ -76,6 +76,58 @@ const signup = async (req, res) => {
 };
 
 /**
+ * Login user
+ */
+const login = async (req, res) => {
+  try {
+    let { phone_number, password } = req.body;
+
+    if (!phone_number || !password) {
+      return res.status(400).json({ message: 'Phone number and password are required' });
+    }
+
+    // Normalize phone number
+    phone_number = normalizePhoneNumber(phone_number);
+    if (!phone_number) {
+      return res.status(400).json({ message: 'Invalid phone number format. Use 07xxxxxxxx' });
+    }
+
+    // Find user by phone
+    const user = await userModel.getUserByPhone(phone_number);
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid phone number or password' });
+    }
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid phone number or password' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { user_id: user.user_id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.json({
+      message: '✅ Login successful',
+      token,
+      user: {
+        user_id: user.user_id,
+        name: user.name,
+        phone_number: user.phone_number,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error('❌ Login error:', error);
+    res.status(500).json({ message: 'Error logging in' });
+  }
+};
+
+/**
  * Get all users
  */
 const getUsers = async (req, res) => {
@@ -124,8 +176,8 @@ const deleteUserById = async (req, res) => {
 
 module.exports = {
   signup,
+  login, // ✅ now included
   getUsers,
   getUserById,
   deleteUserById,
 };
-
